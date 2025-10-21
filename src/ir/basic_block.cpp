@@ -2,6 +2,7 @@
 #include "ir/instruction.h"
 #include <ostream>
 
+// TODO: Need to add similar methods to append in the beginning and in the middleof the list
 void BasicBlock::PushBackInstruction(Instruction* inst) {
     if (first_inst_ == nullptr) {
         first_inst_ = inst;

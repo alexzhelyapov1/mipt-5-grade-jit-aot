@@ -17,6 +17,7 @@ public:
     const std::vector<BasicBlock*>& GetPredecessors() const { return predecessors_; }
     const std::vector<BasicBlock*>& GetSuccessors() const { return successors_; }
 
+    // TODO: Need to add field first_phi_inst_ and first_non_phi_inst_, and similar methods to get them
     Instruction* GetFirstInstruction() const { return first_inst_; }
     Instruction* GetLastInstruction() const { return last_inst_; }
 
@@ -32,6 +33,7 @@ private:
     uint32_t id_;
     Graph* parent_graph_ = nullptr;
     std::vector<BasicBlock*> predecessors_;
+    // TODO: successors number is limited to 2, so it's better to use a pair of pointers
     std::vector<BasicBlock*> successors_;
     Instruction* first_inst_ = nullptr;
     Instruction* last_inst_ = nullptr;

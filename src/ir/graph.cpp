@@ -11,6 +11,7 @@ BasicBlock* Graph::CreateBasicBlock() {
     return &blocks_.back();
 }
 
+// TODO: this method does not belong to the Graph class, it should be in the Instruction class
 User* Graph::RegisterUse(Instruction* def, Instruction* user_inst, uint32_t input_idx) {
     auto user = std::make_unique<User>(user_inst, input_idx);
     User* node = user.get();

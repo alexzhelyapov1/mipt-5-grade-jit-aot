@@ -97,6 +97,7 @@ public:
 
 class CompareInst : public Instruction {
 public:
+    // TODO: What is type, why it is not used? Need to fix
     CompareInst(uint32_t id, Type type, ConditionCode cc, Instruction* lhs, Instruction* rhs)
         : Instruction(Opcode::CMP, type, id), cc_(cc) {
         AddInput(lhs);
@@ -114,6 +115,7 @@ protected:
 
 class BranchInst : public TerminatorInst {
 public:
+    // TODO: How it determines which branch is true and which is false? Need to fix
     BranchInst(uint32_t id, Instruction* cond, BasicBlock* true_bb, BasicBlock* false_bb)
         : TerminatorInst(id, Opcode::JA), true_bb_(true_bb), false_bb_(false_bb) {
         AddInput(cond);
