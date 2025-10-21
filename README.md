@@ -1,4 +1,12 @@
-## JIT/AOT IR Project
+# JIT/AOT IR Project
+
+
+# 2 task
+- Graph analyzer implementation see in `src/ir/analysis`.
+- Graph analyzer tests see in `tests/graph_analyzer_test.cpp`.
+
+
+# 1 task
 
 (JIT/AOT): граф, базовые блоки, инструкции, билдер и дамп в текстовый вид.
 
