@@ -108,3 +108,19 @@ BasicBlock* GraphAnalyzer::GetImmediateDominator(BasicBlock* block) const {
     auto it = immediate_dominators_.find(block);
     return it != immediate_dominators_.end() ? it->second : nullptr;
 }
+
+bool GraphAnalyzer::Dominates(BasicBlock* dominator, BasicBlock* dominated) const {
+    if (dominator == dominated) {
+        return true;
+    }
+    
+    auto it = immediate_dominators_.find(dominated);
+    while (it != immediate_dominators_.end() && it->second != nullptr) {
+        if (it->second == dominator) {
+            return true;
+        }
+        it = immediate_dominators_.find(it->second);
+    }
+    
+    return false;
+}
