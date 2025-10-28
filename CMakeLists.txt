@@ -20,6 +20,10 @@ add_library(ir_core
     src/ir/ir.h
     src/ir/analysis/graph_analyzer.h
     src/ir/analysis/graph_analyzer.cpp
+    src/ir/analysis/loop.h
+    src/ir/analysis/loop.cpp
+    src/ir/analysis/loop_analyzer.h
+    src/ir/analysis/loop_analyzer.cpp
 )
 
 target_include_directories(ir_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

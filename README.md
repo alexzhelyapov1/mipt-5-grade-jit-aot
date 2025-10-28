@@ -1,6 +1,10 @@
 # JIT/AOT IR Project
 
 
+# 3 task
+See last commit in main branch.
+
+
 # 2 task
 - Graph analyzer implementation see in `src/ir/analysis`.
 - Graph analyzer tests see in `tests/graph_analyzer_test.cpp`.

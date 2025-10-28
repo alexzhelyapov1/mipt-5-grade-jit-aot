@@ -12,10 +12,15 @@ public:
 
     void ComputeRPO();
     void BuildDominatorTree();
+    bool Dominates(BasicBlock* dominator, BasicBlock* dominated) const;
     
     const std::vector<BasicBlock*>& GetReversePostOrder() const { return reverse_postorder_; }
     BasicBlock* GetImmediateDominator(BasicBlock* block) const;
     const std::unordered_map<BasicBlock*, size_t>& GetRPONumbers() const { return rpo_numbers_; }
+
+    const std::unordered_map<BasicBlock*, BasicBlock*>& GetImmediateDominators() const { 
+        return immediate_dominators_; 
+    }
 
 private:
     void DFS(BasicBlock* block, std::unordered_set<BasicBlock*>& visited);
