@@ -15,6 +15,8 @@ enum class Opcode {
     Argument,
     ADD,
     MUL,
+    AND,
+    SHL,
     CMP,
     JUMP,
     JA,
@@ -34,4 +36,3 @@ enum class ConditionCode {
     UGT,
     ULE,
 };
-

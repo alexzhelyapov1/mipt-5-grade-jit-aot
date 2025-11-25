@@ -11,6 +11,8 @@ static const char* OpcodeToString(Opcode op) {
         case Opcode::Argument: return "Param";
         case Opcode::ADD: return "Add";
         case Opcode::MUL: return "Mul";
+        case Opcode::AND: return "And";
+        case Opcode::SHL: return "Shl";
         case Opcode::CMP: return "Cmp";
         case Opcode::JUMP: return "Jump";
         case Opcode::JA: return "Branch";

@@ -3,6 +3,7 @@ add_executable(run_tests
     factorial_test.cpp
     use_def_test.cpp
     graph_analyzer_test.cpp
+    optimization_test.cpp
     helpers/factorial_graph.cpp
 )
 

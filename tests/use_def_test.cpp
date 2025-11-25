@@ -7,15 +7,15 @@ TEST(UseDefTest, BinaryAddRegistersUses) {
     auto* basic_block = graph.CreateBasicBlock();
     builder.SetInsertPoint(basic_block);
 
-    auto* const_10 = builder.CreateConstant(Type::U32, 10);
-    auto* const_20 = builder.CreateConstant(Type::U32, 20);
-    auto* add_inst = builder.CreateAdd(const_10, const_20);
+    auto* arg1 = builder.CreateArgument(Type::U32);
+    auto* arg2 = builder.CreateArgument(Type::U32);
+    Instruction* add_inst = builder.CreateAdd(arg1, arg2);
 
-    auto* u1 = const_10->GetFirstUser();
+    auto* u1 = arg1->GetFirstUser();
     ASSERT_NE(u1, nullptr);
     EXPECT_EQ(u1->GetUserInstruction(), add_inst);
 
-    auto* u2 = const_20->GetFirstUser();
+    auto* u2 = arg2->GetFirstUser();
     ASSERT_NE(u2, nullptr);
     EXPECT_EQ(u2->GetUserInstruction(), add_inst);
 }

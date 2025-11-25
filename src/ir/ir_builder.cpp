@@ -35,12 +35,87 @@ ConstantInst* IRBuilder::CreateConstant(Type type, uint64_t value) {
     return CreateInstruction<ConstantInst>(type, value);
 }
 
-BinaryInst* IRBuilder::CreateAdd(Instruction* lhs, Instruction* rhs) {
+// Helper
+static ConstantInst* AsConstant(Instruction* inst) {
+    return dynamic_cast<ConstantInst*>(inst);
+}
+
+Instruction* IRBuilder::CreateAdd(Instruction* lhs, Instruction* rhs) {
+    auto* lc = AsConstant(lhs);
+    auto* rc = AsConstant(rhs);
+
+    // Constant Folding: Const + Const
+    if (lc && rc) {
+        return CreateConstant(lhs->GetType(), lc->GetValue() + rc->GetValue());
+    }
+
+    // Peephole: X + 0 -> X
+    if (rc && rc->GetValue() == 0) {
+        return lhs;
+    }
+
+    // Peephole: 0 + X -> X
+    if (lc && lc->GetValue() == 0) {
+        return rhs;
+    }
+
     return CreateInstruction<BinaryInst>(Opcode::ADD, lhs->GetType(), lhs, rhs);
 }
 
-BinaryInst* IRBuilder::CreateMul(Instruction* lhs, Instruction* rhs) {
+Instruction* IRBuilder::CreateMul(Instruction* lhs, Instruction* rhs) {
     return CreateInstruction<BinaryInst>(Opcode::MUL, lhs->GetType(), lhs, rhs);
+}
+
+Instruction* IRBuilder::CreateAnd(Instruction* lhs, Instruction* rhs) {
+    auto* lc = AsConstant(lhs);
+    auto* rc = AsConstant(rhs);
+
+    // Constant Folding
+    if (lc && rc) {
+        return CreateConstant(lhs->GetType(), lc->GetValue() & rc->GetValue());
+    }
+
+    // Peephole: X & 0 -> 0 (но нужно создать новую константу 0 или вернуть существующую)
+    if (rc && rc->GetValue() == 0) {
+        return rc; 
+    }
+    if (lc && lc->GetValue() == 0) {
+        return lc;
+    }
+
+    // Peephole: X & X -> X
+    if (lhs == rhs) {
+        return lhs;
+    }
+
+    // Peephole: X & -1 (all ones) -> X
+    if (rc && rc->GetValue() == static_cast<uint64_t>(-1)) {
+        return lhs;
+    }
+
+    return CreateInstruction<BinaryInst>(Opcode::AND, lhs->GetType(), lhs, rhs);
+}
+
+Instruction* IRBuilder::CreateShl(Instruction* lhs, Instruction* rhs) {
+    auto* lc = AsConstant(lhs);
+    auto* rc = AsConstant(rhs);
+
+    // Constant Folding
+    if (lc && rc) {
+        return CreateConstant(lhs->GetType(), lc->GetValue() << rc->GetValue());
+    }
+
+    // Peephole: X << 0 -> X
+    if (rc && rc->GetValue() == 0) {
+        return lhs;
+    }
+
+    // Peephole: 0 << X -> 0
+    if (lc && lc->GetValue() == 0) {
+        return lc;
+    }
+
+    return CreateInstruction<BinaryInst>(Opcode::SHL, lhs->GetType(), lhs, rhs);
 }
 
 CompareInst* IRBuilder::CreateCmp(ConditionCode cc, Instruction* lhs, Instruction* rhs) {
@@ -99,5 +174,3 @@ PhiInst* IRBuilder::CreatePhi(Type type) {
 
     return raw_ptr;
 }
-
-

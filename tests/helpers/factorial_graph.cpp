@@ -21,8 +21,8 @@ void BuildFactorialGraph(Graph* graph) {
     builder.CreateBranch(cond, body_bb, exit_bb);
 
     builder.SetInsertPoint(body_bb);
-    BinaryInst* next_res = builder.CreateMul(res_phi, i_phi);
-    BinaryInst* next_i = builder.CreateAdd(i_phi, const_1_u64);
+    Instruction* next_res = builder.CreateMul(res_phi, i_phi);
+    Instruction* next_i = builder.CreateAdd(i_phi, const_1_u64);
     builder.CreateJump(loop_bb);
 
     builder.SetInsertPoint(exit_bb);

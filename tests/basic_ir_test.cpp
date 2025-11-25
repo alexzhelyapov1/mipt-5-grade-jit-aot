@@ -27,33 +27,27 @@ TEST(IRBuilder, CreateSimpleInstructions) {
     BasicBlock* basic_block = graph.CreateBasicBlock();
     builder.SetInsertPoint(basic_block);
 
-    ConstantInst* const_40 = builder.CreateConstant(Type::S32, 40);
+    ArgumentInst* arg_val = builder.CreateArgument(Type::S32);
     ConstantInst* const_2 = builder.CreateConstant(Type::S32, 2);
-    BinaryInst* add_inst = builder.CreateAdd(const_40, const_2);
+    Instruction* add_inst = builder.CreateAdd(arg_val, const_2);
 
     ASSERT_NE(basic_block->GetFirstInstruction(), nullptr);
 
     auto* inst1 = basic_block->GetFirstInstruction();
     ASSERT_EQ(inst1->GetOpcode(), Opcode::Constant);
-    auto* c1 = static_cast<ConstantInst*>(inst1);
-    EXPECT_EQ(c1->GetValue(), 40);
+    auto* c2 = static_cast<ConstantInst*>(inst1);
+    EXPECT_EQ(c2->GetValue(), 2);
 
     auto* inst2 = inst1->GetNext();
     ASSERT_NE(inst2, nullptr);
-    ASSERT_EQ(inst2->GetOpcode(), Opcode::Constant);
-    auto* c2 = static_cast<ConstantInst*>(inst2);
-    EXPECT_EQ(c2->GetValue(), 2);
+    EXPECT_EQ(inst2->GetOpcode(), Opcode::ADD);
 
-    auto* inst3 = inst2->GetNext();
-    ASSERT_NE(inst3, nullptr);
-    EXPECT_EQ(inst3->GetOpcode(), Opcode::ADD);
+    EXPECT_EQ(basic_block->GetLastInstruction(), inst2);
+    EXPECT_EQ(inst2->GetNext(), nullptr);
 
-    EXPECT_EQ(basic_block->GetLastInstruction(), inst3);
-    EXPECT_EQ(inst3->GetNext(), nullptr);
-
-    const auto& inputs = inst3->GetInputs();
+    const auto& inputs = inst2->GetInputs();
     ASSERT_EQ(inputs.size(), 2);
-    EXPECT_EQ(inputs[0], const_40);
+    EXPECT_EQ(inputs[0], arg_val);
     EXPECT_EQ(inputs[1], const_2);
 }
 
@@ -67,7 +61,7 @@ TEST(IRBuilder, FunctionWithArguments) {
     BasicBlock* entry_bb = graph.CreateBasicBlock();
     builder.SetInsertPoint(entry_bb);
 
-    BinaryInst* sum_inst = builder.CreateAdd(arg_a, arg_b);
+    Instruction* sum_inst = builder.CreateAdd(arg_a, arg_b);
 
     builder.CreateRet(sum_inst);
 
