@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stack>
 
-LoopAnalyzer::LoopAnalyzer(Graph* graph) 
+LoopAnalyzer::LoopAnalyzer(Graph* graph)
     : graph_(graph), graph_analyzer_(graph) {}
 
 LoopAnalyzer::~LoopAnalyzer() {
@@ -25,40 +25,54 @@ void LoopAnalyzer::Analyze() {
 
 void LoopAnalyzer::CollectBackEdges() {
     dfs_numbers_.clear();
+    dfs_exit_numbers_.clear();
     in_stack_.clear();
     back_edges_.clear();
     dfs_counter_ = 0;
-    
+
     std::unordered_set<BasicBlock*> visited;
     if (!graph_analyzer_.GetReversePostOrder().empty()) {
         MarkDFS(graph_analyzer_.GetReversePostOrder()[0], visited, in_stack_);
     }
 }
 
-void LoopAnalyzer::MarkDFS(BasicBlock* block, std::unordered_set<BasicBlock*>& visited, 
+void LoopAnalyzer::MarkDFS(BasicBlock* block, std::unordered_set<BasicBlock*>& visited,
                            std::unordered_set<BasicBlock*>& in_stack) {
     visited.insert(block);
     in_stack.insert(block);
     dfs_numbers_[block] = dfs_counter_++;
-    
+
     for (BasicBlock* succ : block->GetSuccessors()) {
         if (in_stack.count(succ)) {
-            if (dfs_numbers_[block] > dfs_numbers_[succ]) {
+            if (dfs_numbers_[block] >= dfs_numbers_[succ]) {
                 back_edges_.emplace_back(block, succ);
             }
         } else if (!visited.count(succ)) {
             MarkDFS(succ, visited, in_stack);
         }
     }
-    
+
     in_stack.erase(block);
+    dfs_exit_numbers_[block] = dfs_counter_++;
+}
+
+bool LoopAnalyzer::IsDescendant(BasicBlock* parent, BasicBlock* child) const {
+    if (parent == child) return true;
+    auto p_entry = dfs_numbers_.find(parent);
+    auto p_exit = dfs_exit_numbers_.find(parent);
+    auto c_entry = dfs_numbers_.find(child);
+    auto c_exit = dfs_exit_numbers_.find(child);
+
+    if (p_entry == dfs_numbers_.end() || c_entry == dfs_numbers_.end()) return false;
+
+    return p_entry->second <= c_entry->second && c_exit->second <= p_exit->second;
 }
 
 void LoopAnalyzer::PopulateLoops() {
     for (auto& back_edge : back_edges_) {
         BasicBlock* latch = back_edge.first;
         BasicBlock* header = back_edge.second;
-        
+
         Loop* loop = nullptr;
         if (header_to_loop_.count(header)) {
             loop = header_to_loop_[header];
@@ -66,48 +80,51 @@ void LoopAnalyzer::PopulateLoops() {
             loop = new Loop(header);
             loops_.push_back(loop);
             header_to_loop_[header] = loop;
-            
+
             bool is_reducible = graph_analyzer_.Dominates(header, latch);
             loop->SetReducible(is_reducible);
         }
-        
+
         loop->AddBackEdge(latch);
-        
-        if (loop->IsReducible()) {
-            FindLoopBlocks(loop, latch);
-        } else {
-            for (auto& edge : back_edges_) {
-                if (edge.second == header) {
-                    loop->AddBlock(edge.first);
-                }
-            }
-        }
+        FindLoopBlocks(loop, latch);
     }
 }
 
 void LoopAnalyzer::FindLoopBlocks(Loop* loop, BasicBlock* latch) {
     std::stack<BasicBlock*> stack;
     std::unordered_set<BasicBlock*> visited;
-    
+
     stack.push(latch);
     visited.insert(latch);
-    
+
     BasicBlock* header = loop->GetHeader();
-    
+
     while (!stack.empty()) {
         BasicBlock* current = stack.top();
         stack.pop();
-        
+
         if (current == header) {
             continue;
         }
-        
+
         if (!loop->ContainsBlock(current)) {
             loop->AddBlock(current);
         }
-        
+
         for (BasicBlock* pred : current->GetPredecessors()) {
-            if (!visited.count(pred) && graph_analyzer_.Dominates(header, pred)) {
+            bool is_valid = false;
+
+            if (loop->IsReducible()) {
+                if (graph_analyzer_.Dominates(header, pred)) {
+                    is_valid = true;
+                }
+            } else {
+                if (IsDescendant(header, pred)) {
+                    is_valid = true;
+                }
+            }
+
+            if (!visited.count(pred) && is_valid) {
                 visited.insert(pred);
                 stack.push(pred);
             }
@@ -118,15 +135,15 @@ void LoopAnalyzer::FindLoopBlocks(Loop* loop, BasicBlock* latch) {
 
 void LoopAnalyzer::BuildLoopTree() {
     root_loop_ = new Loop(nullptr);
-    
+
     std::unordered_set<BasicBlock*> all_blocks;
     for (const auto& bb : graph_->GetBlocks()) {
         all_blocks.insert(const_cast<BasicBlock*>(&bb));
     }
-    
+
     for (BasicBlock* block : all_blocks) {
         Loop* innermost_loop = nullptr;
-        
+
         for (Loop* loop : loops_) {
             if (loop->ContainsBlock(block)) {
                 if (innermost_loop == nullptr) {
@@ -138,17 +155,17 @@ void LoopAnalyzer::BuildLoopTree() {
                 }
             }
         }
-        
+
         if (innermost_loop != nullptr) {
             block_to_innermost_loop_[block] = innermost_loop;
-            
+
             std::vector<Loop*> loops_for_block;
             for (Loop* loop : loops_) {
                 if (loop->ContainsBlock(block)) {
                     loops_for_block.push_back(loop);
                 }
             }
-            std::sort(loops_for_block.begin(), loops_for_block.end(), 
+            std::sort(loops_for_block.begin(), loops_for_block.end(),
                      [this](Loop* a, Loop* b) {
                          return !IsInnerLoop(a, b);
                      });
@@ -157,10 +174,10 @@ void LoopAnalyzer::BuildLoopTree() {
             root_loop_->AddBlock(block);
         }
     }
-    
+
     for (Loop* loop : loops_) {
         Loop* outer = nullptr;
-        
+
         for (Loop* candidate : loops_) {
             if (candidate != loop && candidate->ContainsBlock(loop->GetHeader())) {
                 if (outer == nullptr || IsInnerLoop(candidate, outer)) {
@@ -168,7 +185,7 @@ void LoopAnalyzer::BuildLoopTree() {
                 }
             }
         }
-        
+
         if (outer != nullptr) {
             if (!outer->ContainsLoop(loop)) {
                 outer->AddInnerLoop(loop);
@@ -176,6 +193,7 @@ void LoopAnalyzer::BuildLoopTree() {
         } else {
             if (!root_loop_->ContainsLoop(loop)) {
                 root_loop_->AddInnerLoop(loop);
+                loop->SetOuterLoop(nullptr);
             }
         }
     }
@@ -185,7 +203,7 @@ bool LoopAnalyzer::IsInnerLoop(Loop* inner, Loop* outer) const {
     if (outer->ContainsBlock(inner->GetHeader())) {
         return true;
     }
-    
+
     Loop* parent = inner->GetOuterLoop();
     while (parent != nullptr) {
         if (parent == outer) {
@@ -193,7 +211,7 @@ bool LoopAnalyzer::IsInnerLoop(Loop* inner, Loop* outer) const {
         }
         parent = parent->GetOuterLoop();
     }
-    
+
     return false;
 }
 
@@ -204,18 +222,16 @@ void LoopAnalyzer::ClassifyLoops() {
 }
 
 void LoopAnalyzer::CheckLoopCountable(Loop* loop) {
-    
     if (!loop->IsReducible()) {
         loop->SetCountable(false);
         return;
     }
-    
+
     if (loop->GetBackEdges().size() != 1) {
         loop->SetCountable(false);
         return;
     }
-    
-    
+
     loop->SetCountable(true);
 }
 
@@ -240,12 +256,12 @@ bool LoopAnalyzer::IsLoopHeader(BasicBlock* block) const {
 void LoopAnalyzer::Dump(std::ostream& os) const {
     os << "Loop Analysis Results:\n";
     os << "=====================\n";
-    
+
     os << "Back edges:\n";
     for (const auto& edge : back_edges_) {
         os << "  BB" << edge.first->GetId() << " -> BB" << edge.second->GetId() << "\n";
     }
-    
+
     os << "\nLoops:\n";
     if (loops_.empty()) {
         os << "  (none)\n";
@@ -255,7 +271,7 @@ void LoopAnalyzer::Dump(std::ostream& os) const {
             os << "\n";
         }
     }
-    
+
     if (root_loop_ && !root_loop_->GetBlocks().empty()) {
         os << "Root loop (blocks outside any loop):\n";
         root_loop_->Dump(os, 2);

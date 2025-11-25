@@ -15,7 +15,7 @@ void GraphAnalyzer::ComputeRPO() {
 
     const auto& blocks = graph_->GetBlocks();
     BasicBlock* start_block = const_cast<BasicBlock*>(&(*blocks.begin()));
-    
+
     DFS(start_block, visited);
 
     std::reverse(reverse_postorder_.begin(), reverse_postorder_.end());
@@ -31,19 +31,19 @@ void GraphAnalyzer::DFS(BasicBlock* block, std::unordered_set<BasicBlock*>& visi
     if (visited.count(block)) {
         return;
     }
-    
+
     visited.insert(block);
-    
+
     for (BasicBlock* succ : block->GetSuccessors()) {
         DFS(succ, visited);
     }
-    
+
     reverse_postorder_.push_back(block);
 }
 
 void GraphAnalyzer::BuildDominatorTree() {
     ComputeRPO();
-    
+
     if (reverse_postorder_.empty()) {
         return;
     }
@@ -59,7 +59,7 @@ void GraphAnalyzer::BuildDominatorTree() {
     bool changed = true;
     while (changed) {
         changed = false;
-        
+
         for (size_t i = 1; i < reverse_postorder_.size(); ++i) {
             BasicBlock* block = reverse_postorder_[i];
             BasicBlock* new_idom = nullptr;
@@ -79,7 +79,7 @@ void GraphAnalyzer::BuildDominatorTree() {
                 if (pred != new_idom && immediate_dominators_[pred] != nullptr) {
                     BasicBlock* b = pred;
                     BasicBlock* a = new_idom;
-                    
+
                     while (a != b) {
                         while (rpo_numbers_[a] < rpo_numbers_[b]) {
                             b = immediate_dominators_[b];
@@ -113,14 +113,19 @@ bool GraphAnalyzer::Dominates(BasicBlock* dominator, BasicBlock* dominated) cons
     if (dominator == dominated) {
         return true;
     }
-    
+
     auto it = immediate_dominators_.find(dominated);
     while (it != immediate_dominators_.end() && it->second != nullptr) {
         if (it->second == dominator) {
             return true;
         }
+
+        if (it->second == it->first) {
+            break;
+        }
+
         it = immediate_dominators_.find(it->second);
     }
-    
+
     return false;
 }

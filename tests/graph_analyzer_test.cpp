@@ -111,7 +111,7 @@ TEST(GraphAnalyzer, Example1) {
     BasicBlock* G = graph.CreateBasicBlock();
 
     // A -> B
-    // B -> C, F  
+    // B -> C, F
     // C -> D
     // F -> E, G
     // E -> D
@@ -263,7 +263,7 @@ TEST(GraphAnalyzer, Example2) {
     EXPECT_EQ(analyzer.GetImmediateDominator(I), G);
     EXPECT_EQ(analyzer.GetImmediateDominator(J), B);
     EXPECT_EQ(analyzer.GetImmediateDominator(K), I);
-    
+
     std::unordered_set<BasicBlock*> all_blocks = {A, B, C, D, E, F, G, H, I, J, K};
     std::unordered_set<BasicBlock*> rpo_set(rpo.begin(), rpo.end());
     EXPECT_EQ(rpo_set, all_blocks);
@@ -391,28 +391,28 @@ TEST(LoopAnalyzer, SimpleLoop) {
     ASSERT_EQ(loops.size(), 1);
 
     Loop* loop = loops[0];
-    
+
     EXPECT_EQ(loop->GetHeader(), b);
-    
+
     const auto& loop_blocks = loop->GetBlocks();
     EXPECT_EQ(loop_blocks.size(), 3);
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), b), loop_blocks.end());
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), d), loop_blocks.end());
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), e), loop_blocks.end());
-    
+
     const auto& back_edges = loop->GetBackEdges();
     ASSERT_EQ(back_edges.size(), 1);
     EXPECT_EQ(back_edges[0], e);
-    
+
     EXPECT_TRUE(loop->IsReducible());
     EXPECT_TRUE(loop->IsCountable());
-    
+
     EXPECT_EQ(analyzer.GetLoopForBlock(b), loop);
     EXPECT_EQ(analyzer.GetLoopForBlock(d), loop);
     EXPECT_EQ(analyzer.GetLoopForBlock(e), loop);
     EXPECT_EQ(analyzer.GetLoopForBlock(a), nullptr);
     EXPECT_EQ(analyzer.GetLoopForBlock(c), nullptr);
-    
+
     EXPECT_TRUE(analyzer.IsLoopHeader(b));
     EXPECT_FALSE(analyzer.IsLoopHeader(a));
     EXPECT_FALSE(analyzer.IsLoopHeader(c));
@@ -463,23 +463,23 @@ TEST(LoopAnalyzer, NestedStructureLoop) {
     ASSERT_EQ(loops.size(), 1);
 
     Loop* loop = loops[0];
-    
+
     EXPECT_EQ(loop->GetHeader(), b);
-    
+
     const auto& loop_blocks = loop->GetBlocks();
     EXPECT_EQ(loop_blocks.size(), 4);
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), b), loop_blocks.end());
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), c), loop_blocks.end());
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), d), loop_blocks.end());
     EXPECT_NE(std::find(loop_blocks.begin(), loop_blocks.end(), f), loop_blocks.end());
-    
+
     const auto& back_edges = loop->GetBackEdges();
     ASSERT_EQ(back_edges.size(), 1);
     EXPECT_EQ(back_edges[0], f);
-    
+
     EXPECT_TRUE(loop->IsReducible());
     EXPECT_TRUE(loop->IsCountable());
-    
+
     EXPECT_EQ(analyzer.GetLoopForBlock(b), loop);
     EXPECT_EQ(analyzer.GetLoopForBlock(c), loop);
     EXPECT_EQ(analyzer.GetLoopForBlock(d), loop);
@@ -543,7 +543,7 @@ TEST(LoopAnalyzer, ComplexLoopStructure) {
 
     Loop* loop_a = nullptr;
     Loop* loop_b = nullptr;
-    
+
     for (Loop* loop : loops) {
         if (loop->GetHeader() == a) {
             loop_a = loop;
@@ -551,10 +551,10 @@ TEST(LoopAnalyzer, ComplexLoopStructure) {
             loop_b = loop;
         }
     }
-    
+
     ASSERT_NE(loop_a, nullptr);
     ASSERT_NE(loop_b, nullptr);
-    
+
     const auto& loop_a_blocks = loop_a->GetBlocks();
     EXPECT_EQ(loop_a_blocks.size(), 7); // a, b, c, d, f, g, h
     EXPECT_NE(std::find(loop_a_blocks.begin(), loop_a_blocks.end(), a), loop_a_blocks.end());
@@ -564,11 +564,11 @@ TEST(LoopAnalyzer, ComplexLoopStructure) {
     EXPECT_NE(std::find(loop_a_blocks.begin(), loop_a_blocks.end(), f), loop_a_blocks.end());
     EXPECT_NE(std::find(loop_a_blocks.begin(), loop_a_blocks.end(), g), loop_a_blocks.end());
     EXPECT_NE(std::find(loop_a_blocks.begin(), loop_a_blocks.end(), h), loop_a_blocks.end());
-    
+
     const auto& loop_a_back_edges = loop_a->GetBackEdges();
     ASSERT_EQ(loop_a_back_edges.size(), 1);
     EXPECT_EQ(loop_a_back_edges[0], h);
-    
+
     const auto& loop_b_blocks = loop_b->GetBlocks();
     EXPECT_EQ(loop_b_blocks.size(), 5); // b, c, d, f, g
     EXPECT_NE(std::find(loop_b_blocks.begin(), loop_b_blocks.end(), b), loop_b_blocks.end());
@@ -576,18 +576,18 @@ TEST(LoopAnalyzer, ComplexLoopStructure) {
     EXPECT_NE(std::find(loop_b_blocks.begin(), loop_b_blocks.end(), d), loop_b_blocks.end());
     EXPECT_NE(std::find(loop_b_blocks.begin(), loop_b_blocks.end(), f), loop_b_blocks.end());
     EXPECT_NE(std::find(loop_b_blocks.begin(), loop_b_blocks.end(), g), loop_b_blocks.end());
-    
+
     const auto& loop_b_back_edges = loop_b->GetBackEdges();
     ASSERT_EQ(loop_b_back_edges.size(), 1);
     EXPECT_EQ(loop_b_back_edges[0], g);
-    
+
     EXPECT_TRUE(loop_a->IsReducible());
     EXPECT_TRUE(loop_b->IsReducible());
-    
+
     EXPECT_EQ(loop_b->GetOuterLoop(), loop_a);
     EXPECT_EQ(loop_a->GetInnerLoops().size(), 1);
     EXPECT_EQ(loop_a->GetInnerLoops()[0], loop_b);
-    
+
     EXPECT_EQ(analyzer.GetLoopForBlock(a), loop_a);
     EXPECT_EQ(analyzer.GetLoopForBlock(b), loop_b);
     EXPECT_EQ(analyzer.GetLoopForBlock(c), loop_b);
@@ -596,7 +596,7 @@ TEST(LoopAnalyzer, ComplexLoopStructure) {
     EXPECT_EQ(analyzer.GetLoopForBlock(g), loop_b);
     EXPECT_EQ(analyzer.GetLoopForBlock(h), loop_a);
     EXPECT_EQ(analyzer.GetLoopForBlock(e), nullptr);
-    
+
     EXPECT_TRUE(analyzer.IsLoopHeader(a));
     EXPECT_TRUE(analyzer.IsLoopHeader(b));
     EXPECT_FALSE(analyzer.IsLoopHeader(c));
@@ -613,7 +613,7 @@ TEST(LoopAnalyzer, NoLoopsGraph) {
     IRBuilder builder(&graph);
 
     // A -> B
-    // B -> C, F  
+    // B -> C, F
     // C -> D
     // F -> E, G
     // E -> D
@@ -653,7 +653,7 @@ TEST(LoopAnalyzer, NoLoopsGraph) {
     analyzer.Analyze();
 
     EXPECT_EQ(analyzer.GetLoops().size(), 0);
-    
+
     EXPECT_FALSE(analyzer.IsLoopHeader(A));
     EXPECT_FALSE(analyzer.IsLoopHeader(B));
     EXPECT_FALSE(analyzer.IsLoopHeader(C));
@@ -743,7 +743,7 @@ TEST(LoopAnalyzer, MultipleNestedLoops) {
     Loop* loop_B = nullptr;
     Loop* loop_C = nullptr;
     Loop* loop_E = nullptr;
-    
+
     for (Loop* loop : loops) {
         if (loop->GetHeader() == B) {
             loop_B = loop;
@@ -755,7 +755,7 @@ TEST(LoopAnalyzer, MultipleNestedLoops) {
             loop_E = loop;
         }
     }
-    
+
     ASSERT_NE(loop_B, nullptr);
     ASSERT_NE(loop_C, nullptr);
     ASSERT_NE(loop_E, nullptr);
@@ -803,4 +803,111 @@ TEST(LoopAnalyzer, MultipleNestedLoops) {
     EXPECT_FALSE(analyzer.IsLoopHeader(I));
     EXPECT_FALSE(analyzer.IsLoopHeader(J));
     EXPECT_FALSE(analyzer.IsLoopHeader(K));
+}
+
+TEST(LoopAnalyzer, TwoNestedLoopsComplex) {
+    Graph graph;
+    IRBuilder builder(&graph);
+
+    // A -> B
+    // B -> C, E
+    // C -> D
+    // D -> G
+    // E -> D, F
+    // F -> B, H
+    // G -> C, I
+    // H -> G, I
+    BasicBlock* A = graph.CreateBasicBlock();
+    BasicBlock* B = graph.CreateBasicBlock();
+    BasicBlock* C = graph.CreateBasicBlock();
+    BasicBlock* D = graph.CreateBasicBlock();
+    BasicBlock* E = graph.CreateBasicBlock();
+    BasicBlock* F = graph.CreateBasicBlock();
+    BasicBlock* G = graph.CreateBasicBlock();
+    BasicBlock* H = graph.CreateBasicBlock();
+    BasicBlock* I = graph.CreateBasicBlock();
+
+    builder.SetInsertPoint(A);
+    builder.CreateJump(B);
+
+    builder.SetInsertPoint(B);
+    auto* cond1 = builder.CreateConstant(Type::BOOL, 1);
+    builder.CreateBranch(cond1, C, E);
+
+    builder.SetInsertPoint(C);
+    builder.CreateJump(D);
+
+    builder.SetInsertPoint(D);
+    builder.CreateJump(G);
+
+    builder.SetInsertPoint(E);
+    auto* cond2 = builder.CreateConstant(Type::BOOL, 1);
+    builder.CreateBranch(cond2, D, F);
+
+    builder.SetInsertPoint(F);
+    auto* cond3 = builder.CreateConstant(Type::BOOL, 1);
+    builder.CreateBranch(cond3, B, H);
+
+    builder.SetInsertPoint(G);
+    auto* cond4 = builder.CreateConstant(Type::BOOL, 1);
+    builder.CreateBranch(cond4, C, I);
+
+    builder.SetInsertPoint(H);
+    auto* cond5 = builder.CreateConstant(Type::BOOL, 1);
+    builder.CreateBranch(cond5, G, I);
+
+    builder.SetInsertPoint(I);
+    builder.CreateRet(builder.CreateConstant(Type::U32, 0));
+
+    LoopAnalyzer analyzer(&graph);
+    analyzer.Analyze();
+
+    const auto& loops = analyzer.GetLoops();
+    ASSERT_EQ(loops.size(), 2);
+
+    Loop* loop_B = nullptr;
+    Loop* loop_C = nullptr;
+
+    for (Loop* loop : loops) {
+        if (loop->GetHeader() == B) loop_B = loop;
+        if (loop->GetHeader() == C) loop_C = loop;
+    }
+
+    ASSERT_NE(loop_B, nullptr);
+    ASSERT_NE(loop_C, nullptr);
+
+    EXPECT_TRUE(loop_B->ContainsBlock(B));
+    EXPECT_TRUE(loop_B->ContainsBlock(E));
+    EXPECT_TRUE(loop_B->ContainsBlock(F));
+    EXPECT_EQ(loop_B->GetBackEdges().size(), 1);
+    EXPECT_EQ(loop_B->GetBackEdges()[0], F);
+
+    EXPECT_TRUE(loop_C->ContainsBlock(C));
+    EXPECT_TRUE(loop_C->ContainsBlock(D));
+    EXPECT_TRUE(loop_C->ContainsBlock(G));
+    EXPECT_EQ(loop_C->GetBackEdges().size(), 1);
+    EXPECT_EQ(loop_C->GetBackEdges()[0], G);
+
+    EXPECT_EQ(loop_C->GetOuterLoop(), nullptr);
+    EXPECT_EQ(loop_B->GetOuterLoop(), nullptr);
+
+    EXPECT_EQ(analyzer.GetLoopForBlock(A), nullptr);
+    EXPECT_EQ(analyzer.GetLoopForBlock(B), loop_B);
+    EXPECT_EQ(analyzer.GetLoopForBlock(C), loop_C);
+    EXPECT_EQ(analyzer.GetLoopForBlock(D), loop_C);
+    EXPECT_EQ(analyzer.GetLoopForBlock(E), loop_B);
+    EXPECT_EQ(analyzer.GetLoopForBlock(F), loop_B);
+    EXPECT_EQ(analyzer.GetLoopForBlock(G), loop_C);
+    EXPECT_EQ(analyzer.GetLoopForBlock(H), nullptr);
+    EXPECT_EQ(analyzer.GetLoopForBlock(I), nullptr);
+
+    EXPECT_TRUE(analyzer.IsLoopHeader(B));
+    EXPECT_TRUE(analyzer.IsLoopHeader(C));
+    EXPECT_FALSE(analyzer.IsLoopHeader(A));
+    EXPECT_FALSE(analyzer.IsLoopHeader(D));
+    EXPECT_FALSE(analyzer.IsLoopHeader(E));
+    EXPECT_FALSE(analyzer.IsLoopHeader(F));
+    EXPECT_FALSE(analyzer.IsLoopHeader(G));
+    EXPECT_FALSE(analyzer.IsLoopHeader(H));
+    EXPECT_FALSE(analyzer.IsLoopHeader(I));
 }
