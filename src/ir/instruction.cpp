@@ -11,6 +11,8 @@ static const char* OpcodeToString(Opcode op) {
         case Opcode::Argument: return "Param";
         case Opcode::ADD: return "Add";
         case Opcode::MUL: return "Mul";
+        case Opcode::AND: return "And";
+        case Opcode::SHL: return "Shl";
         case Opcode::CMP: return "Cmp";
         case Opcode::JUMP: return "Jump";
         case Opcode::JA: return "Branch";
@@ -151,4 +153,22 @@ void PhiInst::AddIncoming(Instruction* value, BasicBlock* pred) {
     parent_bb->GetGraph()->RegisterUse(value, this, static_cast<uint32_t>(index));
 }
 
+void Instruction::ReplaceAllUsesWith(Instruction* other_inst) {
+    if (this == other_inst) return;
 
+    User* current_user = head_user_;
+    while (current_user) {
+        Instruction* user_inst = current_user->GetUserInstruction();
+        uint32_t idx = current_user->GetInputIndex();
+
+        user_inst->SetInput(idx, other_inst);
+
+        if (auto* bb = user_inst->GetBasicBlock()) {
+             bb->GetGraph()->RegisterUse(other_inst, user_inst, idx);
+        }
+
+        current_user = current_user->GetNextUser();
+    }
+
+    head_user_ = nullptr;
+}

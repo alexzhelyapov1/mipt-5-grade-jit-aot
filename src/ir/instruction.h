@@ -42,11 +42,12 @@ public:
     Instruction* GetPrev() const { return prev_; }
 
     virtual void Print(std::ostream& os) const;
+    void ReplaceAllUsesWith(Instruction* other_inst);
 
 protected:
     Instruction(Opcode opcode, Type type, uint32_t id)
         : opcode_(opcode), type_(type), id_(id) {}
-    
+
     void AddInput(Instruction* input) { inputs_.push_back(input); }
 
     void ResizeInputs(size_t new_size) { inputs_.resize(new_size); }

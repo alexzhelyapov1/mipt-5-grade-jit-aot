@@ -35,6 +35,10 @@ ConstantInst* IRBuilder::CreateConstant(Type type, uint64_t value) {
     return CreateInstruction<ConstantInst>(type, value);
 }
 
+static ConstantInst* AsConstant(Instruction* inst) {
+    return dynamic_cast<ConstantInst*>(inst);
+}
+
 BinaryInst* IRBuilder::CreateAdd(Instruction* lhs, Instruction* rhs) {
     return CreateInstruction<BinaryInst>(Opcode::ADD, lhs->GetType(), lhs, rhs);
 }
@@ -43,26 +47,36 @@ BinaryInst* IRBuilder::CreateMul(Instruction* lhs, Instruction* rhs) {
     return CreateInstruction<BinaryInst>(Opcode::MUL, lhs->GetType(), lhs, rhs);
 }
 
+BinaryInst* IRBuilder::CreateAnd(Instruction* lhs, Instruction* rhs) {
+    return CreateInstruction<BinaryInst>(Opcode::AND, lhs->GetType(), lhs, rhs);
+}
+
+BinaryInst* IRBuilder::CreateShl(Instruction* lhs, Instruction* rhs) {
+    return CreateInstruction<BinaryInst>(Opcode::SHL, lhs->GetType(), lhs, rhs);
+}
+
 CompareInst* IRBuilder::CreateCmp(ConditionCode cc, Instruction* lhs, Instruction* rhs) {
     return CreateInstruction<CompareInst>(Type::BOOL, cc, lhs, rhs);
 }
 
-void IRBuilder::CreateJump(BasicBlock* target) {
+JumpInst*  IRBuilder::CreateJump(BasicBlock* target) {
     auto* jump_inst = CreateInstruction<JumpInst>(target);
     insert_point_->AddSuccessor(target);
     target->AddPredecessor(insert_point_);
+    return jump_inst;
 }
 
-void IRBuilder::CreateBranch(Instruction* cond, BasicBlock* true_bb, BasicBlock* false_bb) {
+BranchInst*  IRBuilder::CreateBranch(Instruction* cond, BasicBlock* true_bb, BasicBlock* false_bb) {
     auto* branch_inst = CreateInstruction<BranchInst>(cond, true_bb, false_bb);
     insert_point_->AddSuccessor(true_bb);
     insert_point_->AddSuccessor(false_bb);
     true_bb->AddPredecessor(insert_point_);
     false_bb->AddPredecessor(insert_point_);
+    return branch_inst;
 }
 
-void IRBuilder::CreateRet(Instruction* value) {
-    CreateInstruction<ReturnInst>(value);
+ReturnInst*  IRBuilder::CreateRet(Instruction* value) {
+    return CreateInstruction<ReturnInst>(value);
 }
 
 ArgumentInst* IRBuilder::CreateArgument(Type type) {

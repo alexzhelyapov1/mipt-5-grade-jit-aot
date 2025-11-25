@@ -24,6 +24,8 @@ add_library(ir_core
     src/ir/analysis/loop.cpp
     src/ir/analysis/loop_analyzer.h
     src/ir/analysis/loop_analyzer.cpp
+    src/ir/opt/peephole_optimizer.h
+    src/ir/opt/peephole_optimizer.cpp
 )
 
 target_include_directories(ir_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
