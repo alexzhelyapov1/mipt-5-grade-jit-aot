@@ -184,3 +184,64 @@ TEST(Optimization, ComplexSubgraphFolding) {
     ASSERT_EQ(final_val->GetOpcode(), Opcode::Constant);
     EXPECT_EQ(static_cast<ConstantInst*>(final_val)->GetValue(), 40);
 }
+
+TEST(Optimization, AddSelfToShift) {
+    Graph graph;
+    IRBuilder builder(&graph);
+    BasicBlock* bb = graph.CreateBasicBlock();
+    builder.SetInsertPoint(bb);
+
+    auto* arg = builder.CreateArgument(Type::U32);
+
+    auto* add = builder.CreateAdd(arg, arg);
+    auto* ret = builder.CreateRet(add);
+
+    RunOptimization(&graph);
+
+    auto* shl = ret->GetInputs()[0];
+    ASSERT_EQ(shl->GetOpcode(), Opcode::SHL);
+
+    EXPECT_EQ(shl->GetInputs()[0], arg);
+
+    auto* amount = shl->GetInputs()[1];
+    ASSERT_EQ(amount->GetOpcode(), Opcode::Constant);
+    EXPECT_EQ(static_cast<ConstantInst*>(amount)->GetValue(), 1);
+}
+
+TEST(Optimization, AddNegation) {
+    Graph graph;
+    IRBuilder builder(&graph);
+    BasicBlock* bb = graph.CreateBasicBlock();
+    builder.SetInsertPoint(bb);
+
+    auto* arg = builder.CreateArgument(Type::U32);
+    auto* minus_one = builder.CreateConstant(Type::U32, -1);
+    auto* neg = builder.CreateMul(arg, minus_one);
+    auto* res = builder.CreateAdd(arg, neg);
+    auto* ret = builder.CreateRet(res);
+
+    RunOptimization(&graph);
+
+    auto* val = ret->GetInputs()[0];
+    ASSERT_EQ(val->GetOpcode(), Opcode::Constant);
+    EXPECT_EQ(static_cast<ConstantInst*>(val)->GetValue(), 0);
+}
+
+TEST(Optimization, AddNegationCommutative) {
+    Graph graph;
+    IRBuilder builder(&graph);
+    BasicBlock* bb = graph.CreateBasicBlock();
+    builder.SetInsertPoint(bb);
+
+    auto* arg = builder.CreateArgument(Type::U32);
+    auto* minus_one = builder.CreateConstant(Type::U32, -1);
+    auto* neg = builder.CreateMul(minus_one, arg);
+    auto* res = builder.CreateAdd(neg, arg);
+    auto* ret = builder.CreateRet(res);
+
+    RunOptimization(&graph);
+
+    auto* val = ret->GetInputs()[0];
+    ASSERT_EQ(val->GetOpcode(), Opcode::Constant);
+    EXPECT_EQ(static_cast<ConstantInst*>(val)->GetValue(), 0);
+}
