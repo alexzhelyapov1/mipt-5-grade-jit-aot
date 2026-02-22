@@ -2,6 +2,4 @@
 
 class Graph;
 
-void BuildFactorialGraph(Graph* graph);
-
-
+void BuildFactorialGraph(Graph *graph);
