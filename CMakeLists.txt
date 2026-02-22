@@ -42,3 +42,21 @@ add_executable(dump_factorial_ir
 )
 target_include_directories(dump_factorial_ir PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(dump_factorial_ir PRIVATE ir_core)
+
+# --- clang-format target ---
+find_program(CLANG_FORMAT_EXE clang-format-14)
+if(NOT CLANG_FORMAT_EXE)
+    message(WARNING "clang-format-14 not found. The 'clang-force-format' target will not be available.")
+else()
+    file(GLOB_RECURSE ALL_PROJECT_SOURCES
+        "${CMAKE_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/*.h"
+        "${CMAKE_SOURCE_DIR}/tests/*.cpp"
+        "${CMAKE_SOURCE_DIR}/tests/*.h"
+    )
+
+    add_custom_target(clang-force-format
+        COMMAND ${CLANG_FORMAT_EXE} -i --style=file ${ALL_PROJECT_SOURCES}
+        COMMENT "Formatting all .cpp and .h files with clang-format-14"
+    )
+endif()
