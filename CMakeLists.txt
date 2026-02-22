@@ -24,6 +24,12 @@ add_library(ir_core
     src/ir/analysis/loop.cpp
     src/ir/analysis/loop_analyzer.h
     src/ir/analysis/loop_analyzer.cpp
+    src/ir/analysis/live_interval.h
+    src/ir/analysis/live_interval.cpp
+    src/ir/analysis/linear_order.h
+    src/ir/analysis/linear_order.cpp
+    src/ir/analysis/liveness_analyzer.h
+    src/ir/analysis/liveness_analyzer.cpp
     src/ir/opt/peephole_optimizer.h
     src/ir/opt/peephole_optimizer.cpp
 )

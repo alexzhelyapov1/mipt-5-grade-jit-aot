@@ -4,6 +4,8 @@ add_executable(run_tests
     use_def_test.cpp
     graph_analyzer_test.cpp
     optimization_test.cpp
+    liveness_analysis_test.cpp
+    linear_order_test.cpp
     helpers/factorial_graph.cpp
 )
 

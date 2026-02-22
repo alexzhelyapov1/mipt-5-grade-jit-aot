@@ -1,5 +1,17 @@
 # JIT/AOT IR Project
 
+# 5 task
+Source files:
+- `src/ir/analysis/linear_order.h`
+- `src/ir/analysis/linear_order.cpp`
+- `src/ir/analysis/live_interval.cpp`
+- `src/ir/analysis/live_interval.h`
+- `src/ir/analysis/liveness_analyzer.cpp`
+- `src/ir/analysis/liveness_analyzer.h`
+
+Tests (run with `ctest`):
+- `tests/linear_order_test.cpp`
+- `tests/liveness_analysis_test.cpp`
 
 # 3 task
 See last commit in main branch.
