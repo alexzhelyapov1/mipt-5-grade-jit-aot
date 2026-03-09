@@ -68,21 +68,6 @@ void LivenessAnalyzer::ProcessBlock(
   uint32_t block_from = block_positions_.at(block).start;
   uint32_t block_to = block_positions_.at(block).end;
 
-  if (loop_analyzer_.IsLoopHeader(block)) {
-    Loop *loop = loop_analyzer_.GetLoopForBlock(block);
-    if (loop) {
-      uint32_t loop_end = 0;
-      for (auto *loop_block : loop->GetBlocks()) {
-        if (block_positions_.count(loop_block)) {
-          loop_end = std::max(loop_end, block_positions_.at(loop_block).end);
-        }
-      }
-      if (loop_end > block_from) {
-        block_to = loop_end;
-      }
-    }
-  }
-
   for (auto *succ : block->GetSuccessors()) {
     for (auto *inst = succ->GetFirstInstruction(); inst && inst->GetOpcode() == Opcode::PHI; inst = inst->GetNext()) {
       auto *phi = static_cast<PhiInst *>(inst);
@@ -122,6 +107,26 @@ void LivenessAnalyzer::ProcessBlock(
   for (auto *inst = block->GetFirstInstruction(); inst && inst->GetOpcode() == Opcode::PHI; inst = inst->GetNext()) {
     GetOrCreateInterval(inst)->SetStart(block_from);
     live.erase(inst);
+  }
+
+  if (loop_analyzer_.IsLoopHeader(block)) {
+    Loop *loop = loop_analyzer_.GetLoopForBlock(block);
+    if (loop) {
+      uint32_t loop_end = block_positions_.at(block).end;
+      for (auto *loop_block : loop->GetBlocks()) {
+        if (block_positions_.count(loop_block)) {
+          loop_end = std::max(loop_end, block_positions_.at(loop_block).end);
+        }
+      }
+
+      for (auto *inst : live) {
+        GetOrCreateInterval(inst)->AddRange(block_from, loop_end);
+      }
+      for (auto *inst = block->GetFirstInstruction(); inst && inst->GetOpcode() == Opcode::PHI;
+           inst = inst->GetNext()) {
+        GetOrCreateInterval(inst)->AddRange(block_from, loop_end);
+      }
+    }
   }
 
   live_in_sets[block] = std::move(live);
