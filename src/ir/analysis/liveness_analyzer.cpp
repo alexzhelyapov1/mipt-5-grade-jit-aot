@@ -33,7 +33,7 @@ void LivenessAnalyzer::NumberInstructions() {
   }
 }
 
-LiveInterval *LivenessAnalyzer::GetOrCreateInterval(const Instruction *inst) {
+LiveInterval *LivenessAnalyzer::GetOrCreateInterval(Instruction *inst) {
   auto it = intervals_.find(inst);
   if (it != intervals_.end()) {
     return it->second;
@@ -47,7 +47,7 @@ void LivenessAnalyzer::Analyze() {
   loop_analyzer_.Analyze();
   NumberInstructions();
 
-  std::unordered_map<BasicBlock *, std::unordered_set<const Instruction *>> live_in_sets;
+  std::unordered_map<BasicBlock *, std::unordered_set<Instruction *>> live_in_sets;
   const auto &blocks = linear_order_.GetBlocks();
 
   for (auto it = blocks.rbegin(); it != blocks.rend(); ++it) {
@@ -56,8 +56,8 @@ void LivenessAnalyzer::Analyze() {
 }
 
 void LivenessAnalyzer::ProcessBlock(
-    BasicBlock *block, std::unordered_map<BasicBlock *, std::unordered_set<const Instruction *>> &live_in_sets) {
-  std::unordered_set<const Instruction *> live;
+    BasicBlock *block, std::unordered_map<BasicBlock *, std::unordered_set<Instruction *>> &live_in_sets) {
+  std::unordered_set<Instruction *> live;
 
   for (auto *succ : block->GetSuccessors()) {
     if (live_in_sets.count(succ)) {
@@ -132,7 +132,7 @@ void LivenessAnalyzer::ProcessBlock(
   live_in_sets[block] = std::move(live);
 }
 
-uint32_t LivenessAnalyzer::GetInstructionPosition(const Instruction *inst) const {
+uint32_t LivenessAnalyzer::GetInstructionPosition(Instruction *inst) const {
   auto it = inst_positions_.find(inst);
   if (it != inst_positions_.end()) {
     return it->second;
@@ -140,7 +140,7 @@ uint32_t LivenessAnalyzer::GetInstructionPosition(const Instruction *inst) const
   return 0;
 }
 
-LiveInterval *LivenessAnalyzer::GetLiveInterval(const Instruction *inst) const {
+LiveInterval *LivenessAnalyzer::GetLiveInterval(Instruction *inst) const {
   auto it = intervals_.find(inst);
   if (it != intervals_.end()) {
     return it->second;
@@ -166,10 +166,10 @@ void LivenessAnalyzer::Dump(std::ostream &os) const {
     ordered_insts.push_back(inst);
   }
   std::sort(ordered_insts.begin(), ordered_insts.end(), [this](const Instruction *a, const Instruction *b) {
-    return inst_positions_.at(a) < inst_positions_.at(b);
+    return inst_positions_.at(const_cast<Instruction *>(a)) < inst_positions_.at(const_cast<Instruction *>(b));
   });
   for (const auto *inst : ordered_insts) {
-    os << "  " << inst_positions_.at(inst) << ": i" << inst->GetId() << "  (";
+    os << "  " << inst_positions_.at(const_cast<Instruction *>(inst)) << ": i" << inst->GetId() << "  (";
     inst->Print(os);
     os << ")\n";
   }
@@ -177,7 +177,7 @@ void LivenessAnalyzer::Dump(std::ostream &os) const {
 
   os << "Live Intervals:\n";
   for (const auto *inst : ordered_insts) {
-    auto it = intervals_.find(inst);
+    auto it = intervals_.find(const_cast<Instruction *>(inst));
     if (it != intervals_.end()) {
       it->second->Dump(os);
       os << "\n";

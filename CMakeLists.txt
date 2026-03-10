@@ -32,6 +32,8 @@ add_library(ir_core
     src/ir/analysis/liveness_analyzer.cpp
     src/ir/opt/peephole_optimizer.h
     src/ir/opt/peephole_optimizer.cpp
+    src/ir/opt/register_allocator.h
+    src/ir/opt/register_allocator.cpp
 )
 
 target_include_directories(ir_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

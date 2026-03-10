@@ -15,6 +15,20 @@ void BasicBlock::PushBackInstruction(Instruction *inst) {
   inst->basic_block_ = this;
 }
 
+void BasicBlock::InsertBefore(Instruction *new_inst, Instruction *before_inst) {
+    new_inst->basic_block_ = this;
+    if (before_inst == first_inst_) {
+        new_inst->next_ = first_inst_;
+        first_inst_->prev_ = new_inst;
+        first_inst_ = new_inst;
+    } else {
+        new_inst->prev_ = before_inst->prev_;
+        new_inst->next_ = before_inst;
+        before_inst->prev_->next_ = new_inst;
+        before_inst->prev_ = new_inst;
+    }
+}
+
 void BasicBlock::AddPredecessor(BasicBlock *pred) { predecessors_.push_back(pred); }
 
 void BasicBlock::AddSuccessor(BasicBlock *succ) { successors_.push_back(succ); }

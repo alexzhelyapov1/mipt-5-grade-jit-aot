@@ -21,6 +21,7 @@ public:
   Instruction *GetLastInstruction() const { return last_inst_; }
 
   void PushBackInstruction(Instruction *inst);
+  void InsertBefore(Instruction* new_inst, Instruction* before_inst);
   void AddPredecessor(BasicBlock *pred);
   void AddSuccessor(BasicBlock *succ);
   void Dump(std::ostream &os) const;
@@ -28,6 +29,7 @@ public:
 private:
   friend class Graph;
   friend class IRBuilder;
+  friend class Instruction;
 
   uint32_t id_;
   Graph *parent_graph_ = nullptr;

@@ -6,6 +6,7 @@ add_executable(run_tests
     optimization_test.cpp
     liveness_analysis_test.cpp
     linear_order_test.cpp
+    register_allocator_test.cpp
     helpers/factorial_graph.cpp
 )
 

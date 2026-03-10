@@ -6,10 +6,18 @@
 
 IRBuilder::IRBuilder(Graph *graph) : graph_(graph) {}
 
-void IRBuilder::SetInsertPoint(BasicBlock *bb) { insert_point_ = bb; }
+void IRBuilder::SetInsertPoint(BasicBlock *bb) {
+    insert_bb_ = bb;
+    insert_before_ = nullptr;
+}
+
+void IRBuilder::SetInsertPoint(Instruction *inst) {
+    insert_bb_ = inst->GetBasicBlock();
+    insert_before_ = inst;
+}
 
 template <typename InstType, typename... Args> InstType *IRBuilder::CreateInstruction(Args &&...args) {
-  if (!insert_point_) {
+  if (!insert_bb_) {
     throw std::runtime_error("Insert point not set in IRBuilder");
   }
 
@@ -17,7 +25,12 @@ template <typename InstType, typename... Args> InstType *IRBuilder::CreateInstru
 
   auto *raw_ptr = inst_ptr.get();
   graph_->instructions_.push_back(std::move(inst_ptr));
-  insert_point_->PushBackInstruction(raw_ptr);
+  
+  if (insert_before_) {
+    insert_bb_->InsertBefore(raw_ptr, insert_before_);
+  } else {
+    insert_bb_->PushBackInstruction(raw_ptr);
+  }
 
   auto &inputs = raw_ptr->GetInputs();
   for (uint32_t i = 0; i < inputs.size(); ++i) {
@@ -56,17 +69,17 @@ CompareInst *IRBuilder::CreateCmp(ConditionCode cc, Instruction *lhs, Instructio
 
 JumpInst *IRBuilder::CreateJump(BasicBlock *target) {
   auto *jump_inst = CreateInstruction<JumpInst>(target);
-  insert_point_->AddSuccessor(target);
-  target->AddPredecessor(insert_point_);
+  insert_bb_->AddSuccessor(target);
+  target->AddPredecessor(insert_bb_);
   return jump_inst;
 }
 
 BranchInst *IRBuilder::CreateBranch(Instruction *cond, BasicBlock *true_bb, BasicBlock *false_bb) {
   auto *branch_inst = CreateInstruction<BranchInst>(cond, true_bb, false_bb);
-  insert_point_->AddSuccessor(true_bb);
-  insert_point_->AddSuccessor(false_bb);
-  true_bb->AddPredecessor(insert_point_);
-  false_bb->AddPredecessor(insert_point_);
+  insert_bb_->AddSuccessor(true_bb);
+  insert_bb_->AddSuccessor(false_bb);
+  true_bb->AddPredecessor(insert_bb_);
+  false_bb->AddPredecessor(insert_bb_);
   return branch_inst;
 }
 
@@ -85,23 +98,35 @@ ArgumentInst *IRBuilder::CreateArgument(Type type) {
 CastInst *IRBuilder::CreateCast(Type to_type, Instruction *from) { return CreateInstruction<CastInst>(to_type, from); }
 
 PhiInst *IRBuilder::CreatePhi(Type type) {
-  if (!insert_point_) {
+  if (!insert_bb_) {
     throw std::runtime_error("Insert point not set in IRBuilder for Phi");
   }
   auto phi_ptr = std::make_unique<PhiInst>(graph_->next_inst_id_++, type);
   auto *raw_ptr = phi_ptr.get();
   graph_->instructions_.push_back(std::move(phi_ptr));
 
-  raw_ptr->basic_block_ = insert_point_;
-  auto *first_inst = insert_point_->first_inst_;
+  raw_ptr->basic_block_ = insert_bb_;
+  auto *first_inst = insert_bb_->first_inst_;
   if (first_inst == nullptr) {
-    insert_point_->first_inst_ = raw_ptr;
-    insert_point_->last_inst_ = raw_ptr;
+    insert_bb_->first_inst_ = raw_ptr;
+    insert_bb_->last_inst_ = raw_ptr;
   } else {
     raw_ptr->next_ = first_inst;
     first_inst->prev_ = raw_ptr;
-    insert_point_->first_inst_ = raw_ptr;
+    insert_bb_->first_inst_ = raw_ptr;
   }
 
   return raw_ptr;
+}
+
+MoveInst *IRBuilder::CreateMove(Type type, Instruction *from) {
+    return CreateInstruction<MoveInst>(type, from);
+}
+
+LoadInst *IRBuilder::CreateLoad(Type type, Instruction *from) {
+    return CreateInstruction<LoadInst>(type, from);
+}
+
+StoreInst *IRBuilder::CreateStore(Type type, Instruction *value, Instruction *to) {
+    return CreateInstruction<StoreInst>(type, value, to);
 }

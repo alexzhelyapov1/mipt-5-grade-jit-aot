@@ -14,12 +14,16 @@ class PhiInst;
 class JumpInst;
 class BranchInst;
 class ReturnInst;
+class MoveInst;
+class LoadInst;
+class StoreInst;
 
 class IRBuilder {
 public:
   explicit IRBuilder(Graph *graph);
 
   void SetInsertPoint(BasicBlock *bb);
+  void SetInsertPoint(Instruction *inst);
 
   ConstantInst *CreateConstant(Type type, uint64_t value);
 
@@ -38,9 +42,14 @@ public:
   CastInst *CreateCast(Type to_type, Instruction *from);
   PhiInst *CreatePhi(Type type);
 
+  MoveInst *CreateMove(Type type, Instruction *from);
+  LoadInst *CreateLoad(Type type, Instruction *from);
+  StoreInst *CreateStore(Type type, Instruction *value, Instruction *to);
+
 private:
   template <typename InstType, typename... Args> InstType *CreateInstruction(Args &&...args);
 
   Graph *graph_ = nullptr;
-  BasicBlock *insert_point_ = nullptr;
+  BasicBlock *insert_bb_ = nullptr;
+  Instruction *insert_before_ = nullptr;
 };

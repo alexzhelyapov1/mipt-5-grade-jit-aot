@@ -20,25 +20,25 @@ public:
 
   void Analyze();
 
-  LiveInterval *GetLiveInterval(const Instruction *inst) const;
+  LiveInterval *GetLiveInterval(Instruction *inst) const;
   const std::vector<BasicBlock *> &GetLinearOrder() const;
-  uint32_t GetInstructionPosition(const Instruction *inst) const;
+  uint32_t GetInstructionPosition(Instruction *inst) const;
 
   void Dump(std::ostream &os) const;
 
 private:
   void NumberInstructions();
-  LiveInterval *GetOrCreateInterval(const Instruction *inst);
+  LiveInterval *GetOrCreateInterval(Instruction *inst);
   void ProcessBlock(BasicBlock *block,
-                    std::unordered_map<BasicBlock *, std::unordered_set<const Instruction *>> &live_in_sets);
+                    std::unordered_map<BasicBlock *, std::unordered_set<Instruction *>> &live_in_sets);
 
   Graph *graph_;
   LinearOrder linear_order_;
   LoopAnalyzer loop_analyzer_;
 
-  std::unordered_map<const Instruction *, LiveInterval *> intervals_;
+  std::unordered_map<Instruction *, LiveInterval *> intervals_;
   std::unordered_map<BasicBlock *, LiveRange> block_positions_;
-  std::unordered_map<const Instruction *, uint32_t> inst_positions_;
+  std::unordered_map<Instruction *, uint32_t> inst_positions_;
 };
 
 } // namespace analysis

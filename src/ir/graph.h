@@ -15,6 +15,7 @@ public:
   Graph() = default;
   BasicBlock *CreateBasicBlock();
   const std::list<BasicBlock> &GetBlocks() const { return blocks_; }
+  std::list<BasicBlock> &GetBlocks() { return blocks_; }
   User *RegisterUse(Instruction *def, Instruction *user_inst, uint32_t input_idx);
   void Dump(std::ostream &os) const;
   const auto &GetArguments() const { return args_; }

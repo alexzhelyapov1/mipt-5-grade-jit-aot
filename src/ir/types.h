@@ -24,6 +24,9 @@ enum class Opcode {
   PHI,
   U32_TO_U64,
   CAST,
+  MOVE,
+  LOAD,
+  STORE,
 };
 
 enum class ConditionCode {

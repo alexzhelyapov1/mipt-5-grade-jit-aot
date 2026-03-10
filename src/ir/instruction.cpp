@@ -33,6 +33,12 @@ static const char *OpcodeToString(Opcode op) {
     return "U32ToU64";
   case Opcode::CAST:
     return "Cast";
+  case Opcode::MOVE:
+    return "Move";
+  case Opcode::LOAD:
+    return "Load";
+  case Opcode::STORE:
+    return "Store";
   }
   return "<unknown-op>";
 }
@@ -155,6 +161,24 @@ void PhiInst::Print(std::ostream &os) const {
   os << "i" << GetId() << "p." << TypeToString(GetType()) << " Phi ";
   PrintInputs(os, GetInputs());
   PrintUsers(os, this);
+}
+
+void MoveInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " " << OpcodeToString(GetOpcode()) << " ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
+void LoadInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " " << OpcodeToString(GetOpcode()) << " ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
+void StoreInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " " << OpcodeToString(GetOpcode()) << " ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
 }
 
 void PhiInst::AddIncoming(Instruction *value, BasicBlock *pred) {

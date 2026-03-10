@@ -10,6 +10,43 @@ class BasicBlock;
 class Instruction;
 class User;
 
+namespace opt {
+    class RegisterAllocator;
+}
+
+class Location {
+public:
+    enum Kind {
+        UNASSIGNED,
+        REGISTER,
+        STACK,
+    };
+
+    Location() : kind_(UNASSIGNED), value_(0) {}
+
+    static Location MakeRegister(int32_t reg_num) {
+        return Location(REGISTER, reg_num);
+    }
+
+    static Location MakeStack(int32_t offset) {
+        return Location(STACK, offset);
+    }
+
+    Kind GetKind() const {
+        return kind_;
+    }
+
+    int32_t GetValue() const {
+        return value_;
+    }
+
+private:
+    Location(Kind kind, int32_t value) : kind_(kind), value_(value) {};
+
+    Kind kind_;
+    int32_t value_;
+};
+
 class User {
 public:
   User(Instruction *user_inst, uint32_t input_idx) : user_inst_(user_inst), input_idx_(input_idx) {}
@@ -40,6 +77,9 @@ public:
   Instruction *GetNext() const { return next_; }
   Instruction *GetPrev() const { return prev_; }
 
+  Location GetLocation() const { return location_; }
+  void SetLocation(Location loc) { location_ = loc; }
+
   virtual void Print(std::ostream &os) const;
   void ReplaceAllUsesWith(Instruction *other_inst);
 
@@ -59,10 +99,12 @@ private:
   friend class IRBuilder;
   friend class PhiInst;
   friend class Graph;
+  friend class opt::RegisterAllocator;
 
   Opcode opcode_;
   Type type_;
   uint32_t id_;
+  Location location_;
 
   BasicBlock *basic_block_ = nullptr;
   Instruction *prev_ = nullptr;
@@ -159,4 +201,29 @@ public:
   PhiInst(uint32_t id, Type type) : Instruction(Opcode::PHI, type, id) {}
   void AddIncoming(Instruction *value, BasicBlock *pred);
   void Print(std::ostream &os) const override;
+};
+
+class MoveInst : public Instruction {
+public:
+    MoveInst(uint32_t id, Type type, Instruction* from) : Instruction(Opcode::MOVE, type, id) {
+        AddInput(from);
+    }
+    void Print(std::ostream &os) const override;
+};
+
+class LoadInst : public Instruction {
+public:
+    LoadInst(uint32_t id, Type type, Instruction* from) : Instruction(Opcode::LOAD, type, id) {
+        AddInput(from);
+    }
+    void Print(std::ostream &os) const override;
+};
+
+class StoreInst : public Instruction {
+public:
+    StoreInst(uint32_t id, Type type, Instruction* value, Instruction* to) : Instruction(Opcode::STORE, type, id) {
+        AddInput(value);
+        AddInput(to);
+    }
+    void Print(std::ostream &os) const override;
 };

@@ -74,7 +74,7 @@ TEST(LivenessAnalysis, IfElseBranch) {
   // FAIL() << ss.str();
 
   // Get instruction positions
-  auto pos = [&](const Instruction *inst) { return analyzer.GetInstructionPosition(inst); };
+  auto pos = [&](Instruction *inst) { return analyzer.GetInstructionPosition(inst); };
 
   // Get block boundaries
   auto block_end = [&](BasicBlock *bb) {
@@ -163,7 +163,7 @@ TEST(LivenessAnalysis, SimpleLoop) {
   LivenessAnalyzer analyzer(&graph);
   analyzer.Analyze();
 
-  auto pos = [&](const Instruction *inst) { return analyzer.GetInstructionPosition(inst); };
+  auto pos = [&](Instruction *inst) { return analyzer.GetInstructionPosition(inst); };
 
   auto block_start = [&](BasicBlock *bb) {
     return analyzer.GetLinearOrder().size() > bb->GetId() ? analyzer.GetInstructionPosition(bb->GetFirstInstruction())
