@@ -1,5 +1,15 @@
 # JIT/AOT IR Project
 
+# 6 task
+Source files:
+- `src/ir/opt/register_allocator.cpp`
+- `src/ir/opt/register_allocator.h`
+
+Tests (run with `ctest`):
+- `tests/register_allocator_test.cpp`
+
+Note: The penultimate commit
+
 # 5 task
 Source files:
 - `src/ir/analysis/linear_order.h`

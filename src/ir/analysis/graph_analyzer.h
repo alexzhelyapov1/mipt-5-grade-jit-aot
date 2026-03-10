@@ -7,25 +7,27 @@
 #include <vector>
 
 class GraphAnalyzer {
-public:
-  explicit GraphAnalyzer(Graph *graph) : graph_(graph) {}
+  public:
+    explicit GraphAnalyzer(Graph *graph) : graph_(graph) {}
 
-  void ComputeRPO();
-  void BuildDominatorTree();
-  bool Dominates(BasicBlock *dominator, BasicBlock *dominated) const;
+    void ComputeRPO();
+    void BuildDominatorTree();
+    bool Dominates(BasicBlock *dominator, BasicBlock *dominated) const;
 
-  const std::vector<BasicBlock *> &GetReversePostOrder() const { return reverse_postorder_; }
-  BasicBlock *GetImmediateDominator(BasicBlock *block) const;
-  const std::unordered_map<BasicBlock *, size_t> &GetRPONumbers() const { return rpo_numbers_; }
+    const std::vector<BasicBlock *> &GetReversePostOrder() const { return reverse_postorder_; }
+    BasicBlock *GetImmediateDominator(BasicBlock *block) const;
+    const std::unordered_map<BasicBlock *, size_t> &GetRPONumbers() const { return rpo_numbers_; }
 
-  const std::unordered_map<BasicBlock *, BasicBlock *> &GetImmediateDominators() const { return immediate_dominators_; }
+    const std::unordered_map<BasicBlock *, BasicBlock *> &GetImmediateDominators() const {
+        return immediate_dominators_;
+    }
 
-private:
-  void DFS(BasicBlock *block, std::unordered_set<BasicBlock *> &visited);
+  private:
+    void DFS(BasicBlock *block, std::unordered_set<BasicBlock *> &visited);
 
-  Graph *graph_;
-  BasicBlock *start_block_ = nullptr;
-  std::vector<BasicBlock *> reverse_postorder_;
-  std::unordered_map<BasicBlock *, BasicBlock *> immediate_dominators_;
-  std::unordered_map<BasicBlock *, size_t> rpo_numbers_;
+    Graph *graph_;
+    BasicBlock *start_block_ = nullptr;
+    std::vector<BasicBlock *> reverse_postorder_;
+    std::unordered_map<BasicBlock *, BasicBlock *> immediate_dominators_;
+    std::unordered_map<BasicBlock *, size_t> rpo_numbers_;
 };

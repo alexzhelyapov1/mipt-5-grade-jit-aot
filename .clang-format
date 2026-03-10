@@ -1,2 +1,5 @@
 BasedOnStyle: llvm
 ColumnLimit: 120
+IndentWidth: 4
+ContinuationIndentWidth: 4
+UseTab: Never
