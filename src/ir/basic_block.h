@@ -22,8 +22,11 @@ class BasicBlock {
 
     void PushBackInstruction(Instruction *inst);
     void InsertBefore(Instruction *new_inst, Instruction *before_inst);
+    void RemoveInstruction(Instruction *inst);
+    BasicBlock *SplitAt(Instruction *inst);
     void AddPredecessor(BasicBlock *pred);
     void AddSuccessor(BasicBlock *succ);
+    void ReplacePredecessor(BasicBlock *old_pred, BasicBlock *new_pred);
     void Dump(std::ostream &os) const;
 
   private:

@@ -126,3 +126,7 @@ LoadInst *IRBuilder::CreateLoad(Type type, Instruction *from) { return CreateIns
 StoreInst *IRBuilder::CreateStore(Type type, Instruction *value, Instruction *to) {
     return CreateInstruction<StoreInst>(type, value, to);
 }
+
+CallStaticInst *IRBuilder::CreateCallStatic(Graph *callee, const std::vector<Instruction *> &args) {
+    return CreateInstruction<CallStaticInst>(callee, args);
+}

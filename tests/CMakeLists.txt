@@ -7,6 +7,7 @@ add_executable(run_tests
     liveness_analysis_test.cpp
     linear_order_test.cpp
     register_allocator_test.cpp
+    inliner_test.cpp
     helpers/factorial_graph.cpp
 )
 

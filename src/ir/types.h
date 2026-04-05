@@ -27,6 +27,7 @@ enum class Opcode {
     MOVE,
     LOAD,
     STORE,
+    CALL_STATIC,
 };
 
 enum class ConditionCode {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ir/types.h"
+#include <vector>
 
 class Graph;
 class BasicBlock;
@@ -17,6 +18,7 @@ class ReturnInst;
 class MoveInst;
 class LoadInst;
 class StoreInst;
+class CallStaticInst;
 
 class IRBuilder {
   public:
@@ -45,6 +47,8 @@ class IRBuilder {
     MoveInst *CreateMove(Type type, Instruction *from);
     LoadInst *CreateLoad(Type type, Instruction *from);
     StoreInst *CreateStore(Type type, Instruction *value, Instruction *to);
+
+    CallStaticInst *CreateCallStatic(Graph *callee, const std::vector<Instruction *> &args);
 
   private:
     template <typename InstType, typename... Args> InstType *CreateInstruction(Args &&...args);

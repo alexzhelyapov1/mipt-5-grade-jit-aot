@@ -39,6 +39,8 @@ static const char *OpcodeToString(Opcode op) {
         return "Load";
     case Opcode::STORE:
         return "Store";
+    case Opcode::CALL_STATIC:
+        return "CallStatic";
     }
     return "<unknown-op>";
 }
@@ -179,6 +181,77 @@ void StoreInst::Print(std::ostream &os) const {
     os << "i" << GetId() << "." << TypeToString(GetType()) << " " << OpcodeToString(GetOpcode()) << " ";
     PrintInputs(os, GetInputs());
     PrintUsers(os, this);
+}
+
+void CallStaticInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " CallStatic ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
+Instruction *ConstantInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new ConstantInst(0, GetType(), GetValue());
+}
+
+Instruction *BinaryInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new BinaryInst(0, GetOpcode(), GetType(), MapInput(GetInputs()[0], mapping),
+                          MapInput(GetInputs()[1], mapping));
+}
+
+Instruction *CompareInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new CompareInst(0, GetType(), cc_, MapInput(GetInputs()[0], mapping), MapInput(GetInputs()[1], mapping));
+}
+
+Instruction *BranchInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new BranchInst(0, MapInput(GetInputs()[0], mapping), true_bb_, false_bb_);
+}
+
+Instruction *JumpInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new JumpInst(0, target_bb_);
+}
+
+Instruction *ReturnInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    if (GetInputs().empty()) {
+        return new ReturnInst(0);
+    }
+    return new ReturnInst(0, MapInput(GetInputs()[0], mapping));
+}
+
+Instruction *ArgumentInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new ArgumentInst(0, GetType());
+}
+
+Instruction *CastInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new CastInst(0, GetType(), MapInput(GetInputs()[0], mapping));
+}
+
+Instruction *PhiInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    auto *new_phi = new PhiInst(0, GetType());
+    new_phi->ResizeInputs(GetInputs().size());
+    for (size_t i = 0; i < GetInputs().size(); ++i) {
+        new_phi->SetInput(i, MapInput(GetInputs()[i], mapping));
+    }
+    return new_phi;
+}
+
+Instruction *MoveInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new MoveInst(0, GetType(), MapInput(GetInputs()[0], mapping));
+}
+
+Instruction *LoadInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new LoadInst(0, GetType(), MapInput(GetInputs()[0], mapping));
+}
+
+Instruction *StoreInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new StoreInst(0, GetType(), MapInput(GetInputs()[0], mapping), MapInput(GetInputs()[1], mapping));
+}
+
+Instruction *CallStaticInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    std::vector<Instruction *> new_args;
+    for (auto *arg : GetInputs()) {
+        new_args.push_back(MapInput(arg, mapping));
+    }
+    return new CallStaticInst(0, callee_, new_args);
 }
 
 void PhiInst::AddIncoming(Instruction *value, BasicBlock *pred) {

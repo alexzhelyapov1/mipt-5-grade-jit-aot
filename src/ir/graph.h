@@ -16,12 +16,17 @@ class Graph {
     BasicBlock *CreateBasicBlock();
     const std::list<BasicBlock> &GetBlocks() const { return blocks_; }
     std::list<BasicBlock> &GetBlocks() { return blocks_; }
+
+    BasicBlock *GetStartBlock() const { return start_block_; }
+    void SetStartBlock(BasicBlock *bb) { start_block_ = bb; }
+
     User *RegisterUse(Instruction *def, Instruction *user_inst, uint32_t input_idx);
     void Dump(std::ostream &os) const;
     const auto &GetArguments() const { return args_; }
 
   private:
     friend class IRBuilder;
+    friend class Inliner;
 
     std::list<BasicBlock> blocks_;
     std::list<std::unique_ptr<Instruction>> instructions_;

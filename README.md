@@ -1,5 +1,13 @@
 # JIT/AOT IR Project
 
+# 7 task
+Source files:
+- src/ir/opt/inliner.h
+- src/ir/opt/inliner.cpp
+
+Tests:
+- tests/inliner_test.cpp
+
 # 6 task
 Source files:
 - `src/ir/opt/register_allocator.cpp`
