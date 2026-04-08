@@ -86,6 +86,7 @@ void Inliner::PatchClonedInstructions(Graph *callee, std::map<BasicBlock *, Basi
 void Inliner::ConnectCFG(Graph *callee, BasicBlock *caller_bb, BasicBlock *cont_bb,
                        std::map<BasicBlock *, BasicBlock *> &bb_map, std::vector<ReturnInfo> &returns) {
     auto *first_bb = bb_map[callee->GetStartBlock()];
+    // разрезал все ок
     caller_bb->AddSuccessor(first_bb);
     first_bb->AddPredecessor(caller_bb);
     for (auto &bb : callee->GetBlocks()) {
@@ -97,6 +98,8 @@ void Inliner::ConnectCFG(Graph *callee, BasicBlock *caller_bb, BasicBlock *cont_
         }
     }
     if (returns.empty() && callee->GetBlocks().empty()) {
+        // TODO: еще один саксессор под условиями, если условие может быть тру, как прыгнуть по этой дуге? Это условие недостижимо?
+        // эксепшн в коцне - континюатион блок недостижим
         caller_bb->AddSuccessor(cont_bb);
         cont_bb->AddPredecessor(caller_bb);
     }
@@ -131,6 +134,7 @@ Instruction *Inliner::CreateMergePhi(Graph *graph, BasicBlock *cont_bb, CallStat
 
 void Inliner::InlineCall(CallStaticInst *call) {
     auto *caller_bb = call->GetBasicBlock();
+    // TODO fix + assert
     auto *callee = call->GetCallee();
     auto *cont_bb = caller_bb->SplitAt(call->GetNext());
     caller_bb->RemoveInstruction(call);
