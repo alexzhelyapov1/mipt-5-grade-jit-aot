@@ -2,8 +2,10 @@
 #include "ir/basic_block.h"
 #include "ir/graph.h"
 #include "ir/instruction.h"
+#include "ir/ir_builder.h"
 #include <algorithm>
 #include <unordered_map>
+#include <cassert>
 
 void Inliner::MapParameters(Graph *callee, CallStaticInst *call, InstMapping &mapping) {
     auto &callee_args = callee->GetArguments();
@@ -85,9 +87,17 @@ void Inliner::PatchClonedInstructions(Graph *callee, std::map<BasicBlock *, Basi
 
 void Inliner::ConnectCFG(Graph *callee, BasicBlock *caller_bb, BasicBlock *cont_bb,
                        std::map<BasicBlock *, BasicBlock *> &bb_map, std::vector<ReturnInfo> &returns) {
+    IRBuilder builder(graph_);
+    if (callee->GetBlocks().empty()) {
+        builder.SetInsertPoint(caller_bb);
+        builder.CreateJump(cont_bb);
+        return;
+    }
+
     auto *first_bb = bb_map[callee->GetStartBlock()];
-    caller_bb->AddSuccessor(first_bb);
-    first_bb->AddPredecessor(caller_bb);
+    builder.SetInsertPoint(caller_bb);
+    builder.CreateJump(first_bb);
+
     for (auto &bb : callee->GetBlocks()) {
         auto *new_bb = bb_map[&bb];
         for (auto *succ : bb.GetSuccessors()) {
@@ -96,20 +106,17 @@ void Inliner::ConnectCFG(Graph *callee, BasicBlock *caller_bb, BasicBlock *cont_
             new_succ->AddPredecessor(new_bb);
         }
     }
-    if (returns.empty() && callee->GetBlocks().empty()) {
-        caller_bb->AddSuccessor(cont_bb);
-        cont_bb->AddPredecessor(caller_bb);
-    }
 }
 
 Instruction *Inliner::CreateMergePhi(Graph *graph, BasicBlock *cont_bb, CallStaticInst *call,
                                    std::vector<ReturnInfo> &returns) {
+    IRBuilder builder(graph);
     if (returns.size() <= 1) {
         if (returns.size() == 1) {
-            returns[0].bb->AddSuccessor(cont_bb);
-            cont_bb->AddPredecessor(returns[0].bb);
             Instruction *val = returns[0].inst->GetInputs().empty() ? nullptr : returns[0].inst->GetInputs()[0];
             returns[0].bb->RemoveInstruction(returns[0].inst);
+            builder.SetInsertPoint(returns[0].bb);
+            builder.CreateJump(cont_bb);
             return val;
         }
         return nullptr;
@@ -119,12 +126,12 @@ Instruction *Inliner::CreateMergePhi(Graph *graph, BasicBlock *cont_bb, CallStat
     cont_bb->InsertBefore(phi, cont_bb->GetFirstInstruction());
     phi->SetBasicBlock(cont_bb);
     for (auto &ret : returns) {
-        ret.bb->AddSuccessor(cont_bb);
-        cont_bb->AddPredecessor(ret.bb);
+        ret.bb->RemoveInstruction(ret.inst);
+        builder.SetInsertPoint(ret.bb);
+        builder.CreateJump(cont_bb);
         if (!ret.inst->GetInputs().empty()) {
             phi->AddIncoming(ret.inst->GetInputs()[0], ret.bb);
         }
-        ret.bb->RemoveInstruction(ret.inst);
     }
     return phi;
 }
@@ -132,6 +139,7 @@ Instruction *Inliner::CreateMergePhi(Graph *graph, BasicBlock *cont_bb, CallStat
 void Inliner::InlineCall(CallStaticInst *call) {
     auto *caller_bb = call->GetBasicBlock();
     auto *callee = call->GetCallee();
+    assert(callee != nullptr);
     auto *cont_bb = caller_bb->SplitAt(call->GetNext());
     caller_bb->RemoveInstruction(call);
 
