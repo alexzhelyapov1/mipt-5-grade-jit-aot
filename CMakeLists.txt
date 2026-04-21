@@ -36,6 +36,10 @@ add_library(ir_core
     src/ir/opt/register_allocator.cpp
     src/ir/opt/inliner.h
     src/ir/opt/inliner.cpp
+    src/ir/opt/checks_elimination.h
+    src/ir/opt/checks_elimination.cpp
+    src/ir/analysis/bounds_analysis.h
+    src/ir/analysis/bounds_analysis.cpp
 )
 
 target_include_directories(ir_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

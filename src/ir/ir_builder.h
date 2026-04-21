@@ -50,6 +50,10 @@ class IRBuilder {
 
     CallStaticInst *CreateCallStatic(Graph *callee, const std::vector<Instruction *> &args);
 
+    Instruction *CreateNullCheck(Instruction *obj);
+    Instruction *CreateBoundsCheck(Instruction *index, Instruction *len);
+    Instruction *CreateDeoptimize();
+
   private:
     template <typename InstType, typename... Args> InstType *CreateInstruction(Args &&...args);
 

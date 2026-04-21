@@ -130,3 +130,15 @@ StoreInst *IRBuilder::CreateStore(Type type, Instruction *value, Instruction *to
 CallStaticInst *IRBuilder::CreateCallStatic(Graph *callee, const std::vector<Instruction *> &args) {
     return CreateInstruction<CallStaticInst>(callee, args);
 }
+
+Instruction *IRBuilder::CreateNullCheck(Instruction *obj) {
+    return CreateInstruction<NullCheckInst>(obj);
+}
+
+Instruction *IRBuilder::CreateBoundsCheck(Instruction *index, Instruction *len) {
+    return CreateInstruction<BoundsCheckInst>(index, len);
+}
+
+Instruction *IRBuilder::CreateDeoptimize() {
+    return CreateInstruction<DeoptimizeInst>();
+}

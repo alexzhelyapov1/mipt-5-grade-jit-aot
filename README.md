@@ -1,55 +1,57 @@
-# JIT/AOT IR Project
+# JIT/AOT Compiler Backend
 
-# 7 task
-Source files:
-- src/ir/opt/inliner.h
-- src/ir/opt/inliner.cpp
+This repository contains a pedagogical JIT/AOT compiler backend implementation, developed as part of a compiler engineering course at the Moscow Institute of Physics and Technology (MIPT). The project focuses on the implementation of an SSA-based Intermediate Representation (IR), various static analyses, and advanced optimizations.
 
-Tests:
-- tests/inliner_test.cpp
+## 🚀 Tech Stack
 
-# 6 task
-Source files:
-- `src/ir/opt/register_allocator.cpp`
-- `src/ir/opt/register_allocator.h`
+- **Language**: C++20
+- **Build System**: CMake (3.20+)
+- **Testing Framework**: [GoogleTest](https://github.com/google/googletest)
+- **Tooling**: `clang-format` for code style enforcement
 
-Tests (run with `ctest`):
-- `tests/register_allocator_test.cpp`
+## 🛠 Key Features & Components
 
-Note: The penultimate commit
+### Intermediate Representation (IR)
+- **SSA-based Graph**: A control-flow graph (CFG) where `Graph` containers hold `BasicBlock`s, which in turn contain `Instruction`s.
+- **Typed Instructions**: Support for multiple data types (U32, U64, Bool, etc.).
+- **User-Def Chains**: Built-in support for tracking instruction usages.
+- **Explicit Phi Nodes**: IR correctly represents merge points in SSA form.
 
-# 5 task
-Source files:
-- `src/ir/analysis/linear_order.h`
-- `src/ir/analysis/linear_order.cpp`
-- `src/ir/analysis/live_interval.cpp`
-- `src/ir/analysis/live_interval.h`
-- `src/ir/analysis/liveness_analyzer.cpp`
-- `src/ir/analysis/liveness_analyzer.h`
+### Static Analysis
+- **Graph Analysis**: Dominance frontier, Dominator Tree, and DFS traversals (RPO).
+- **Loop Analysis**: Identification of loops, back-edges, and loop nesting structure.
+- **Liveness Analysis**: Computation of `LiveInterval`s for all virtual registers.
+- **Bounds Analysis**: Analysis of loop induction variables and array access bounds.
 
-Tests (run with `ctest`):
-- `tests/linear_order_test.cpp`
-- `tests/liveness_analysis_test.cpp`
+### Optimizations
+- **Register Allocation**: Implementation of **Linear Scan on SSA** (based on the Wimmer & Mössenböck algorithm). Handles spilling and phi resolution via move insertion.
+- **Inlining**: Basic static function inlining.
+- **Checks Elimination**: Redundant `NULL_CHECK` and `BOUNDS_CHECK` removal using dominance information and loop bounds.
+- **Peephole Optimization**: Algebraic simplifications and constant folding.
 
-# 3 task
-See last commit in main branch.
+## 📁 Project Structure
 
+The project was developed incrementally through a series of tasks:
+- **Task 1-2**: IR construction (Graph, Blocks, Instructions) and Graph Analysis (Dominance).
+- **Task 3-4**: Peephole optimizations and Loop Analysis.
+- **Task 5-6**: Liveness Analysis and Linear Scan Register Allocation.
+- **Task 7-8**: Inlining and Redundant Checks Elimination.
 
-# 2 task
-- Graph analyzer implementation see in `src/ir/analysis`.
-- Graph analyzer tests see in `tests/graph_analyzer_test.cpp`.
+## 🔧 Installation & Build
 
+### Prerequisites
+- A C++20 compatible compiler (GCC 10+, Clang 12+)
+- CMake 3.20 or higher
+- Ninja (optional, but recommended)
 
-# 1 task
-
-(JIT/AOT): граф, базовые блоки, инструкции, билдер и дамп в текстовый вид.
-
-### Инициализация:
+### Step 1: Clone and Initialize Submodules
 ```bash
+git clone --recursive https://github.com/your-repo/jit-aot.git
+# Or if already cloned:
 git submodule update --init --recursive
 ```
 
-### Сборка
+### Step 2: Build the Project
 ```bash
 mkdir build
 cd build
@@ -57,20 +59,23 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ..
 ninja
 ```
 
-### Тесты
+## 🧪 Usage & Testing
+
+### Running Tests
+All components are covered by unit tests. You can run them using `ctest`:
 ```bash
 cd build
 ctest
 ```
 
-### Дамп IR факториала
+### Example: Factorial IR Dump
+To see the IR representation of a factorial function:
 ```bash
 cd build
 ./dump_factorial_ir
 ```
 
-Результат:
-
+**Example Output:**
 ```
 Function Arguments:
   i0.u32 Argument -> (i3)

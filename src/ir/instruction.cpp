@@ -41,8 +41,14 @@ static const char *OpcodeToString(Opcode op) {
         return "Store";
     case Opcode::CALL_STATIC:
         return "CallStatic";
+    case Opcode::NULL_CHECK:
+        return "NullCheck";
+    case Opcode::BOUNDS_CHECK:
+        return "BoundsCheck";
+    case Opcode::DEOPTIMIZE:
+        return "Deoptimize";
     }
-    return "<unknown-op>";
+    return "Unknown";
 }
 
 static const char *TypeToString(Type t) {
@@ -189,6 +195,24 @@ void CallStaticInst::Print(std::ostream &os) const {
     PrintUsers(os, this);
 }
 
+void NullCheckInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " NullCheck ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
+void BoundsCheckInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " BoundsCheck ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
+void DeoptimizeInst::Print(std::ostream &os) const {
+    os << "i" << GetId() << "." << TypeToString(GetType()) << " Deoptimize ";
+    PrintInputs(os, GetInputs());
+    PrintUsers(os, this);
+}
+
 Instruction *ConstantInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
     return new ConstantInst(0, GetType(), GetValue());
 }
@@ -252,6 +276,18 @@ Instruction *CallStaticInst::Clone(Graph *target_graph, const InstMapping &mappi
         new_args.push_back(MapInput(arg, mapping));
     }
     return new CallStaticInst(0, callee_, new_args);
+}
+
+Instruction *NullCheckInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new NullCheckInst(0, MapInput(GetInputs()[0], mapping));
+}
+
+Instruction *BoundsCheckInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new BoundsCheckInst(0, MapInput(GetInputs()[0], mapping), MapInput(GetInputs()[1], mapping));
+}
+
+Instruction *DeoptimizeInst::Clone(Graph *target_graph, const InstMapping &mapping) const {
+    return new DeoptimizeInst(0);
 }
 
 void PhiInst::AddIncoming(Instruction *value, BasicBlock *pred) {

@@ -8,6 +8,7 @@ add_executable(run_tests
     linear_order_test.cpp
     register_allocator_test.cpp
     inliner_test.cpp
+    checks_elimination_test.cpp
     helpers/factorial_graph.cpp
 )
 
