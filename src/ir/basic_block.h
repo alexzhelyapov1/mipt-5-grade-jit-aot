@@ -27,6 +27,8 @@ class BasicBlock {
     void AddPredecessor(BasicBlock *pred);
     void AddSuccessor(BasicBlock *succ);
     void ReplacePredecessor(BasicBlock *old_pred, BasicBlock *new_pred);
+    void RemovePredecessor(BasicBlock *pred);
+    void ClearSuccessors();
     void Dump(std::ostream &os) const;
 
   private:

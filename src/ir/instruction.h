@@ -153,6 +153,8 @@ class CompareInst : public Instruction {
     void Print(std::ostream &os) const override;
     Instruction *Clone(Graph *target_graph, const InstMapping &mapping) const override;
 
+    ConditionCode GetCC() const { return cc_; }
+
   private:
     ConditionCode cc_;
 };
@@ -267,4 +269,31 @@ class CallStaticInst : public Instruction {
 
   private:
     Graph *callee_;
+};
+
+class NullCheckInst : public Instruction {
+  public:
+    NullCheckInst(uint32_t id, Instruction *obj): Instruction(Opcode::NULL_CHECK, Type::VOID, id) {
+      AddInput(obj);
+    }
+    void Print(std::ostream &os) const override;
+    Instruction *Clone(Graph *target_graph, const InstMapping &mapping) const override;
+};
+
+class BoundsCheckInst : public Instruction {
+  public:
+    BoundsCheckInst(uint32_t id, Instruction *index, Instruction *len)
+        : Instruction(Opcode::BOUNDS_CHECK, Type::VOID, id) {
+        AddInput(index);
+        AddInput(len);
+    }
+    void Print(std::ostream &os) const override;
+    Instruction *Clone(Graph *target_graph, const InstMapping &mapping) const override;
+};
+
+class DeoptimizeInst : public TerminatorInst {
+  public:
+    DeoptimizeInst(uint32_t id) : TerminatorInst(id, Opcode::DEOPTIMIZE) {}
+    void Print(std::ostream &os) const override;
+    Instruction *Clone(Graph *target_graph, const InstMapping &mapping) const override;
 };

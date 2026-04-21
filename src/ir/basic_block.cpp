@@ -90,6 +90,20 @@ void BasicBlock::ReplacePredecessor(BasicBlock *old_pred, BasicBlock *new_pred) 
     }
 }
 
+void BasicBlock::RemovePredecessor(BasicBlock *pred_to_remove) {
+    auto it = std::find(predecessors_.begin(), predecessors_.end(), pred_to_remove);
+    if (it != predecessors_.end()) {
+        predecessors_.erase(it);
+    }
+}
+
+void BasicBlock::ClearSuccessors() {
+    for (auto *succ : successors_) {
+        succ->RemovePredecessor(this);
+    }
+    successors_.clear();
+}
+
 static void PrintBlockList(std::ostream &os, const char *label, const std::vector<BasicBlock *> &list) {
     os << label << ":";
 

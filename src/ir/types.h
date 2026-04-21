@@ -28,6 +28,9 @@ enum class Opcode {
     LOAD,
     STORE,
     CALL_STATIC,
+    NULL_CHECK,
+    BOUNDS_CHECK,
+    DEOPTIMIZE,
 };
 
 enum class ConditionCode {

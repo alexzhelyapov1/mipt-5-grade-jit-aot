@@ -1,5 +1,14 @@
 # JIT/AOT IR Project
 
+# 8 task
+- src/ir/analysis/bounds_analysis.h
+- src/ir/analysis/bounds_analysis.cpp
+- src/ir/opt/checks_elimination.h
+- src/ir/opt/checks_elimination.cpp
+
+Tests:
+- tests/checks_elimination_test.cpp
+
 # 7 task
 Source files:
 - src/ir/opt/inliner.h
